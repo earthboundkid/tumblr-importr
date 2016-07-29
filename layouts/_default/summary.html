@@ -1,0 +1,14 @@
+{{ if .Params.readmore }}
+  <section class="main-content main-content__abstract">
+      <div>
+          {{ .Summary }}
+      </div>
+
+      <p class="post--readmore">
+          <a href="{{ .RelPermalink }}">Read more&hellip;</a>
+      </p>
+  </section>
+{{ else }}
+  {{ .Render "content" }}
+  {{ partial "source" . }}
+{{ end }}

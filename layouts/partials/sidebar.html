@@ -1,0 +1,18 @@
+<div class="sidebar">
+  <section class="sidebar--about">
+    <h1 class="sidebar--title">
+      <a href="{{ .Site.BaseURL }}">{{ .Site.Title }}</a>
+    </h1>
+
+    <p class="sidebar--lead">
+    {{ with .Site.Params.description }} {{. | markdownify }} {{end}}
+    </p>
+  </section>
+  <nav>
+    <ul>
+      {{ range .Site.Menus.main }}
+        <li><a href="{{.URL}}"> {{ .Name }} </a></li>
+      {{end}}
+    </ul>
+  </nav>
+</div>

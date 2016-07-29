@@ -1,0 +1,12 @@
+{{ if and (isset .Site.Params "disqusShortname") (ne .Site.Params.disqusShortname "") }}
+<section class="comments">
+    <h2>Comments</h2>
+    <div id="disqus_thread"></div>
+</section>
+
+<script
+    type="text/javascript"
+    src="//{{ .Site.Params.disqusShortname }}.disqus.com/embed.js"
+    async>
+</script>
+{{ end }}

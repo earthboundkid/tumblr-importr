@@ -1,0 +1,24 @@
+<section class="main-content main-content__photo">
+    <figure>
+    {{ range .Params.tumblr.photos }}
+        {{ $caption := .caption }}
+        <picture>
+        {{ range .alt_sizes }}
+            <source srcset="{{ .url }}" media="(max-width: {{ .width }}px)">
+        {{ end }}
+        {{ range first 1 .alt_sizes }}
+            <img
+                src="{{ .url }}"
+                alt="{{ $caption }}"
+                width="{{ .width }}">
+        {{ end }}
+        </picture>
+        {{ with .caption }}
+            <figcaption>{{ . | safeHTML }}</figcaption>
+        {{ end }}
+    {{ end }}
+    {{ with .Params.tumblr.caption }}
+        <figcaption>{{ . | safeHTML }}</figcaption>
+    {{ end }}
+    </figure>
+</section>

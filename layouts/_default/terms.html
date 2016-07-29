@@ -1,0 +1,17 @@
+{{ define "main" }}
+<main class="posts posts__terms">
+    <h1 class="posts__terms--title">{{ .Title }}</h1>
+
+    {{ $data := .Data }}
+    {{ $baseUrl := .Site.BaseURL }}
+
+    <ul>
+    {{ range $_, $value := .Data.Terms.ByCount }}
+        <li>
+            <a href="{{ $baseUrl }}{{ $data.Plural }}/{{ $value.Name | urlize }}"> {{ $value.Name }} </a>
+            <small>({{ $value.Count }})</small>
+        </li>
+    {{ end }}
+    </ul>
+</main>
+{{ end }}

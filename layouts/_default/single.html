@@ -1,0 +1,20 @@
+{{ define "main" }}
+<main class="posts posts__single">
+    <article class="post">
+        {{ partial "post-header.html" . }}
+
+        {{ .Render "content" }}
+        {{ partial "source" . }}
+
+        <footer>
+            <ul class="post--tags">
+            {{ range .Params.tags }}
+                <li><a href="/tags/{{ . | urlize }}">{{ . }}</a> </li>
+            {{ end }}
+            </ul>
+
+            {{ partial "disqus.html" . }}
+        </footer>
+    </article>
+</main>
+{{ end }}

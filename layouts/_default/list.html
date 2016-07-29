@@ -1,0 +1,10 @@
+{{ define "main" }}
+<main class="posts posts__list">
+    <h1 class="posts__list--title">{{ .Title }}</h1>
+    <ul class="posts__list--list">
+    {{ range .Data.Pages }}
+        {{ .Render "li" }}
+    {{ end }}
+    </ul>
+</main>
+{{ end }}

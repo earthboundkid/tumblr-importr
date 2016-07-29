@@ -1,0 +1,13 @@
+{{ if .Params.body_abstract }}
+  <section class="text abstract">
+  {{ .Params.tumblr.body_abstract | safeHTML }}
+
+  <p>
+      <a href="{{ .RelPermalink }}">Read more&hellip;</a>
+  </p>
+  </section>
+{{ else }}
+  <section class="text">
+    {{ .Params.tumblr.body | safeHTML }}
+  </section>
+{{ end }}

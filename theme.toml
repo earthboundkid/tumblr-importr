@@ -1,0 +1,12 @@
+name = "Tumblr Basic"
+license = "MIT"
+licenselink = "https://github.com/carlmjohnson/tumblr-importr/blob/master/LICENSE"
+description = "A basic theme scaffold for supporting Tumblr's features."
+tags = ["tumblr"]
+features = ["tumblr"]
+min_version = 0.1
+
+[author]
+    name = "Carl M. Johnson"
+    homepage = "https://carlmjohnson.net/"
+

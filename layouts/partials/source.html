@@ -1,0 +1,6 @@
+{{ if .Params.tumblr.source_url }}
+<p class="post--source">
+    Source:
+    <a href="{{ .Params.tumblr.source_url }}" title="{{ .Params.tumblr.source_title }}">{{ .Params.tumblr.source_title }}</a>
+</p>
+{{ end }}
