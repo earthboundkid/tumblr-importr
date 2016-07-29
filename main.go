@@ -14,8 +14,8 @@ import (
 func main() {
 	const apiURL = `https://api.tumblr.com/v2/blog/%s/posts?api_key=%s&limit=%d`
 
-	data, err := ioutil.ReadFile("./config.toml")
-	die(err, "could not read config.toml")
+	data, err := ioutil.ReadFile("./tumblr.toml")
+	die(err, "could not read tumblr.toml")
 
 	var (
 		blog, key string
