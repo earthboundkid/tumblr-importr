@@ -23,11 +23,6 @@ func main() {
 	}{&blog, &key})
 	die(errors.Wrap(err, "could not parse config file"))
 
-	// Make a post directory for saving things
-	die(errors.Wrap(
-		os.MkdirAll("post", os.ModePerm),
-		"could not make posts directory"))
-
 	tc := NewTumblrClient(blog, key)
 
 	pc, ec := tc.Posts()
@@ -43,7 +38,8 @@ func main() {
 			}
 			fmt.Print(".")
 			for _, post := range posts {
-				die(processPost(post))
+				err = processPost(post)
+				die(err)
 			}
 		}
 	}

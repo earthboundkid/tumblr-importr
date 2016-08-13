@@ -27,22 +27,26 @@ func processPost(post Post) (err error) {
 	}
 
 	if err = json.Unmarshal(post.RawMessage, &data); err != nil {
-		return errors.Wrap(err, "bad data from Tumblr")
+		err = errors.Wrap(err, "bad data from Tumblr")
+		return
 	}
 
 	var m map[string]interface{}
 	if err = json.Unmarshal(post.RawMessage, &m); err != nil {
-		return errors.Wrap(err, "bad data from Tumblr")
+		err = errors.Wrap(err, "bad data from Tumblr")
+		return
 	}
 
 	date, err := time.Parse("2006-01-02 15:04:05 GMT", data.Date)
 	if err != nil {
-		return errors.Wrap(err, "bad data from Tumblr")
+		err = errors.Wrap(err, "bad data from Tumblr")
+		return
 	}
 
 	u, err := url.Parse(data.Post_url)
 	if err != nil {
-		return errors.Wrap(err, "bad data from Tumblr")
+		err = errors.Wrap(err, "bad data from Tumblr")
+		return
 	}
 
 	var output = struct {
@@ -65,10 +69,17 @@ func processPost(post Post) (err error) {
 		m,
 	}
 
-	fname := fmt.Sprintf("post/%d.md", data.Id)
+	path := fmt.Sprintf("post/%4d/%02d/", date.Year(), date.Month())
+	if err = os.MkdirAll(path, os.ModePerm); err != nil {
+		err = errors.Wrap(err, "could not make directory to save entries in")
+		return
+	}
+
+	fname := fmt.Sprintf("%s/%s-%d.md", path, data.Slug, data.Id)
 	f, err := os.Create(fname)
 	if err != nil {
-		return errors.Wrap(err, "could not save file")
+		err = errors.Wrap(err, "could not save file")
+		return
 	}
 
 	defer f.Close()
@@ -76,9 +87,10 @@ func processPost(post Post) (err error) {
 	fmt.Fprintln(f, "+++")
 	t := toml.NewEncoder(f)
 	if err = t.Encode(output); err != nil {
-		return errors.Wrap(err, "could not save file")
+		err = errors.Wrap(err, "could not save file")
+		return
 	}
 
 	fmt.Fprintln(f, "+++")
-	return nil
+	return
 }
