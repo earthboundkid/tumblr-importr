@@ -8,9 +8,14 @@ import (
 	"time"
 
 	"github.com/kezhuw/toml"
+	"github.com/pkg/errors"
 )
 
-func processPost(post json.RawMessage) {
+type Post struct {
+	json.RawMessage
+}
+
+func processPost(post Post) (err error) {
 	var data struct {
 		Date     string
 		Id       int
@@ -21,15 +26,24 @@ func processPost(post json.RawMessage) {
 		Type     string
 	}
 
-	die(json.Unmarshal(post, &data), "bad data from Tumblr")
+	if err = json.Unmarshal(post.RawMessage, &data); err != nil {
+		return errors.Wrap(err, "bad data from Tumblr")
+	}
+
 	var m map[string]interface{}
-	die(json.Unmarshal(post, &m), "bad data from Tumblr")
+	if err = json.Unmarshal(post.RawMessage, &m); err != nil {
+		return errors.Wrap(err, "bad data from Tumblr")
+	}
 
 	date, err := time.Parse("2006-01-02 15:04:05 GMT", data.Date)
-	die(err, "bad data from Tumblr")
+	if err != nil {
+		return errors.Wrap(err, "bad data from Tumblr")
+	}
 
 	u, err := url.Parse(data.Post_url)
-	die(err, "bad data from Tumblr")
+	if err != nil {
+		return errors.Wrap(err, "bad data from Tumblr")
+	}
 
 	var output = struct {
 		Date    time.Time   `toml:"date"`
@@ -53,11 +67,18 @@ func processPost(post json.RawMessage) {
 
 	fname := fmt.Sprintf("post/%d.md", data.Id)
 	f, err := os.Create(fname)
-	die(err, "could not save file")
+	if err != nil {
+		return errors.Wrap(err, "could not save file")
+	}
+
 	defer f.Close()
 
 	fmt.Fprintln(f, "+++")
 	t := toml.NewEncoder(f)
-	die(t.Encode(output), "could not save file")
+	if err = t.Encode(output); err != nil {
+		return errors.Wrap(err, "could not save file")
+	}
+
 	fmt.Fprintln(f, "+++")
+	return nil
 }
