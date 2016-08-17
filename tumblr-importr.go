@@ -9,10 +9,35 @@ import (
 
 	"github.com/kezhuw/toml"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
 type Post struct {
 	json.RawMessage
+}
+
+type PostProcessor struct {
+	posts []Post
+	err   error
+}
+
+func Process(pp <-chan PostProcessor) error {
+	var eg errgroup.Group
+
+	for p := range pp {
+		if p.err != nil {
+			return p.err
+		}
+
+		for _, post := range p.posts {
+			post := post
+			eg.Go(func() error {
+				return processPost(post)
+			})
+		}
+	}
+
+	return eg.Wait()
 }
 
 func processPost(post Post) (err error) {

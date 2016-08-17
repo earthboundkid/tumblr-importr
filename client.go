@@ -89,23 +89,22 @@ func (tc TumblrClient) getTumblrPosts(offset int) (posts []Post, totalPosts int,
 	return s.Response.Posts, s.Response.Total_posts, err
 }
 
-func (tc TumblrClient) Posts() (<-chan []Post, <-chan error) {
+func (tc TumblrClient) Posts() <-chan PostProcessor {
 	var (
-		// Buffer channels so we can send before we return
-		pc = make(chan []Post, 1)
-		ec = make(chan error, 1)
+		// Buffer channel so we can send before we return
+		pp = make(chan PostProcessor, 1)
 		eg errgroup.Group
 	)
 
 	// Fetch first page
 	posts, totalPosts, err := tc.getTumblrPosts(0)
 	if err != nil {
-		ec <- err
-		return pc, ec
+		pp <- PostProcessor{err: err}
+		return pp
 	}
 
 	// Send posts off to be processed
-	pc <- posts
+	pp <- PostProcessor{posts: posts}
 
 	// Tell it to fetch other pages
 	for i := 0 + limit; i < totalPosts; i += limit {
@@ -116,17 +115,17 @@ func (tc TumblrClient) Posts() (<-chan []Post, <-chan error) {
 				return err
 			}
 
-			pc <- posts
+			pp <- PostProcessor{posts: posts}
 			return nil
 		})
 	}
 
 	go func() {
-		defer close(pc)
+		defer close(pp)
 		if err := eg.Wait(); err != nil {
-			ec <- err
+			pp <- PostProcessor{err: err}
 		}
 	}()
 
-	return pc, ec
+	return pp
 }

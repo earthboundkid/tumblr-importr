@@ -25,24 +25,7 @@ func main() {
 
 	tc := NewTumblrClient(blog, key)
 
-	pc, ec := tc.Posts()
-
-	for {
-		select {
-		case err = <-ec:
-			die(err)
-		case posts, ok := <-pc:
-			if !ok {
-				fmt.Println()
-				return
-			}
-			fmt.Print(".")
-			for _, post := range posts {
-				err = processPost(post)
-				die(err)
-			}
-		}
-	}
+	die(Process(tc.Posts()))
 
 	// TODO:
 	// Split into three files: main, tumblr, savr
@@ -54,7 +37,7 @@ func main() {
 
 func die(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %v", err)
+		fmt.Fprintf(os.Stderr, "Fatal error: %v\n", err)
 		os.Exit(1)
 	}
 }
