@@ -75,7 +75,7 @@ func processPost(post Post) (err error) {
 		return
 	}
 
-	fname := fmt.Sprintf("%s/%s-%d.md", path, data.Slug, data.Id)
+	fname := fmt.Sprintf("%s/%d-%s.md", path, data.Id, data.Slug)
 	f, err := os.Create(fname)
 	if err != nil {
 		err = errors.Wrap(err, "could not save file")
