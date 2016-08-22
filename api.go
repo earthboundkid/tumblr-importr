@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -18,28 +19,29 @@ const (
 
 type TumblrClient struct {
 	baseUrl *url.URL
+	pp      *PostProcessor
+	eg      errgroup.Group
 }
 
-func NewTumblrClient(blog, key string) TumblrClient {
-
+func NewTumblrClient(blog, key string, pp *PostProcessor) *TumblrClient {
 	// Figure out starting URL
 	baseUrl, _ := url.Parse(fmt.Sprintf(apiURL, blog, key, apiLimit))
 
-	return TumblrClient{baseUrl}
+	return &TumblrClient{baseUrl: baseUrl, pp: pp}
 }
 
-func (tc TumblrClient) getTumblrPosts(offset int) (posts []Post, totalPosts int, err error) {
+func (tc *TumblrClient) getTumblrPosts(offset int) (posts []Post, totalPosts int, err error) {
 	u := *tc.baseUrl
 	q := u.Query()
 	q.Set("offset", strconv.Itoa(offset))
 	u.RawQuery = q.Encode()
 
-	rsp, err := fetch(u.String())
-	if err != nil {
+	var buf bytes.Buffer
+	if fetch(u.String(), &buf) != nil {
 		return
 	}
 
-	dec := json.NewDecoder(rsp)
+	dec := json.NewDecoder(&buf)
 	var s struct {
 		Response struct {
 			Total_posts int
@@ -52,43 +54,36 @@ func (tc TumblrClient) getTumblrPosts(offset int) (posts []Post, totalPosts int,
 	return s.Response.Posts, s.Response.Total_posts, err
 }
 
-func (tc TumblrClient) Posts() <-chan PostProcessor {
-	var (
-		// Buffer channel so we can send before we return
-		pp = make(chan PostProcessor, 1)
-		eg errgroup.Group
-	)
-
+func (tc *TumblrClient) Wait() error {
 	// Fetch first page
 	posts, totalPosts, err := tc.getTumblrPosts(0)
 	if err != nil {
-		pp <- PostProcessor{err: err}
-		return pp
+		tc.pp.Error(err)
+		return err
 	}
 
 	// Send posts off to be processed
-	pp <- PostProcessor{posts: posts}
+	tc.pp.Posts(posts)
 
 	// Tell it to fetch other pages
 	for i := 0 + apiLimit; i < totalPosts; i += apiLimit {
 		offset := i
-		eg.Go(func() error {
+		tc.eg.Go(func() error {
 			posts, _, err := tc.getTumblrPosts(offset)
 			if err != nil {
+				tc.pp.Error(err)
 				return err
 			}
 
-			pp <- PostProcessor{posts: posts}
+			tc.pp.Posts(posts)
 			return nil
 		})
 	}
 
-	go func() {
-		defer close(pp)
-		if err := eg.Wait(); err != nil {
-			pp <- PostProcessor{err: err}
-		}
-	}()
+	if err := tc.eg.Wait(); err != nil {
+		tc.pp.Error(err)
+		return err
+	}
 
-	return pp
+	return tc.pp.Wait()
 }

@@ -23,16 +23,17 @@ func main() {
 	}{&blog, &key})
 	die(errors.Wrap(err, "could not parse config file"))
 
-	tc := NewTumblrClient(blog, key)
+	// Todo configure me
+	i := NewImageProcessor()
+	pp := NewPostProcessor(i)
+	tc := NewTumblrClient(blog, key, pp)
 
-	die(Process(tc.Posts()))
+	die(tc.Wait())
 
 	// TODO:
-	// Split into three files: main, tumblr, savr
+	// Move into sub-directory
+	// Write documentation
 	// Save images somewhere
-	// - Regex to find them in the TOML
-	// - MD5 hash the image URLs to make a new file name
-	// - Download and save them someplace
 }
 
 func die(err error) {

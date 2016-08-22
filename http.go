@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -22,7 +22,9 @@ var (
 	}
 )
 
-func fetch(url string) (io.Reader, error) {
+func fetch(url string, w io.Writer) (err error) {
+	log.Printf("GET %s", url)
+
 	semaphore <- true
 	defer func() {
 		<-semaphore
@@ -34,20 +36,19 @@ func fetch(url string) (io.Reader, error) {
 	if err != nil {
 		cancel()
 		err = errors.Wrap(err, fmt.Sprintf("could not fetch %s", url))
-		return nil, err
+		return
 	}
 	defer rsp.Body.Close()
 
 	if rsp.StatusCode != http.StatusOK {
 		cancel()
-		return nil, fmt.Errorf("bad status for %s: %s", url, rsp.Status)
+		return fmt.Errorf("bad status for %s: %s", url, rsp.Status)
 	}
 
-	var buf bytes.Buffer
-	if _, err = io.Copy(&buf, rsp.Body); err != nil {
+	if _, err = io.Copy(w, rsp.Body); err != nil {
 		cancel()
-		return nil, errors.Wrap(err, fmt.Sprintf("connection reset for %s", url))
+		return errors.Wrap(err, fmt.Sprintf("connection reset for %s", url))
 	}
 
-	return &buf, nil
+	return
 }

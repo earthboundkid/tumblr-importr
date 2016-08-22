@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/kezhuw/toml"
@@ -17,30 +20,41 @@ type Post struct {
 }
 
 type PostProcessor struct {
-	posts []Post
-	err   error
+	ip *imageProcessor
+	eg errgroup.Group
 }
 
-func Process(pp <-chan PostProcessor) error {
-	var eg errgroup.Group
+func NewPostProcessor(ip *imageProcessor) *PostProcessor {
+	return &PostProcessor{ip: ip}
+}
 
-	for p := range pp {
-		if p.err != nil {
-			return p.err
-		}
-
-		for _, post := range p.posts {
-			post := post
-			eg.Go(func() error {
-				return processPost(post)
-			})
-		}
+func (pp *PostProcessor) Posts(posts []Post) {
+	for _, post := range posts {
+		post := post
+		pp.eg.Go(func() error {
+			return pp.processPost(post)
+		})
 	}
-
-	return eg.Wait()
 }
 
-func processPost(post Post) (err error) {
+func (pp *PostProcessor) Error(err error) {
+	if err != nil {
+		pp.eg.Go(func() error {
+			return err
+		})
+	}
+}
+
+func (pp *PostProcessor) Wait() error {
+	if err := pp.eg.Wait(); err != nil {
+		return err
+	}
+	return pp.ip.Wait()
+}
+
+var reg = regexp.MustCompile(`https?://[\w-.]+tumblr\.com/[\w-./]+(\.jpe?g|\.png|\.gif)`)
+
+func (pp *PostProcessor) processPost(post Post) (err error) {
 	var data struct {
 		Date     string
 		Id       int
@@ -94,6 +108,15 @@ func processPost(post Post) (err error) {
 		m,
 	}
 
+	b, err := toml.Marshal(output)
+	if err != nil {
+		return errors.Wrap(err, "TOML error")
+	}
+
+	b = reg.ReplaceAllFunc(b, pp.ip.Replace)
+	r := bytes.NewReader(b)
+
+	// Todo: use a template
 	path := fmt.Sprintf("post/%4d/%02d/", date.Year(), date.Month())
 	if err = os.MkdirAll(path, os.ModePerm); err != nil {
 		err = errors.Wrap(err, "could not make directory to save entries in")
@@ -109,13 +132,16 @@ func processPost(post Post) (err error) {
 
 	defer f.Close()
 
-	fmt.Fprintln(f, "+++")
-	t := toml.NewEncoder(f)
-	if err = t.Encode(output); err != nil {
-		err = errors.Wrap(err, "could not save file")
+	if _, err = io.WriteString(f, "+++"); err != nil {
+		return
+	}
+	if _, err = io.Copy(f, r); err != nil {
+		return
+	}
+	if _, err = io.WriteString(f, "+++"); err != nil {
 		return
 	}
 
-	fmt.Fprintln(f, "+++")
 	return
+
 }
