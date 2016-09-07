@@ -24,6 +24,7 @@ func main() {
 	die(errors.Wrap(err, "could not parse config file"))
 
 	// Todo configure me
+	// TODO what if you don't want images?
 	i := NewImageProcessor()
 	pp := NewPostProcessor(i)
 	tc := NewTumblrClient(blog, key, pp)
@@ -33,7 +34,8 @@ func main() {
 	// TODO:
 	// Move into sub-directory
 	// Write documentation
-	// Save images somewhere
+
+	// Benchmark networking code
 }
 
 func die(err error) {

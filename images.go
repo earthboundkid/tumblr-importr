@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
-	"os"
 	"path/filepath"
 	"sync"
 
@@ -19,48 +18,55 @@ type imageProcessor struct {
 }
 
 func NewImageProcessor() *imageProcessor {
-	i := imageProcessor{
+	return &imageProcessor{
 		baseURL:   "https://example.com/images/",
 		imagePath: "images/",
 		seenURLs:  map[string]bool{},
 	}
-	// TODO
-	_ = os.MkdirAll(i.imagePath, os.ModePerm)
-	return &i
 }
 
-func (i *imageProcessor) Replace(originalURL []byte) []byte {
+func (ip *imageProcessor) Replace(originalURL []byte) []byte {
 	originalURLstr := string(originalURL)
 	hashedFileName := fmt.Sprintf("%x%s",
 		md5.Sum(originalURL), filepath.Ext(originalURLstr))
 
-	i.add(originalURLstr, hashedFileName)
+	fullFilePath := filepath.Join(ip.imagePath, hashedFileName[0:2],
+		hashedFileName[2:4], hashedFileName[4:])
 
-	newURL := i.baseURL + hashedFileName
+	ip.add(originalURLstr, fullFilePath)
+
+	newURL := fmt.Sprintf("%s%s/%s/%s", ip.baseURL, hashedFileName[0:2],
+		hashedFileName[2:4], hashedFileName[4:])
 
 	return []byte(newURL)
 }
 
-func (i *imageProcessor) add(originalURLstr, hashedFileName string) {
-	i.m.Lock()
-	defer i.m.Unlock()
+func (ip *imageProcessor) add(originalURLstr, fullFilePath string) {
+	ip.m.Lock()
+	defer ip.m.Unlock()
 
-	if i.seenURLs[originalURLstr] {
+	if ip.seenURLs[originalURLstr] {
 		return
 	}
 
-	i.seenURLs[originalURLstr] = true
+	ip.seenURLs[originalURLstr] = true
 
-	i.eg.Go(func() error {
-		f, err := os.Create(i.imagePath + hashedFileName)
-		if err != nil {
-			return err
-		}
+	ip.eg.Go(func() (err error) {
+		return save(originalURLstr, fullFilePath)
+		// 	for i := 0; i < 3; i++ {
+		// 		err = save(originalURLstr, fullFilePath)
+		// 		if err == nil {
+		// 			break
+		// 		}
+		// 		log.Printf("Fetch err: %v", err)
+		// 		// Hmm, something went wrong, try again after sleeping
+		// 		time.Sleep(500 * time.Millisecond)
+		// 	}
 
-		return fetch(originalURLstr, f)
+		// 	return err
 	})
 }
 
-func (i *imageProcessor) Wait() error {
-	return i.eg.Wait()
+func (ip *imageProcessor) Wait() error {
+	return ip.eg.Wait()
 }

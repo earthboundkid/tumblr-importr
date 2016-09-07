@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -36,12 +35,12 @@ func (tc *TumblrClient) getTumblrPosts(offset int) (posts []Post, totalPosts int
 	q.Set("offset", strconv.Itoa(offset))
 	u.RawQuery = q.Encode()
 
-	var buf bytes.Buffer
-	if fetch(u.String(), &buf) != nil {
+	r, err := fetch(u.String())
+	if err != nil {
 		return
 	}
 
-	dec := json.NewDecoder(&buf)
+	dec := json.NewDecoder(r)
 	var s struct {
 		Response struct {
 			Total_posts int
