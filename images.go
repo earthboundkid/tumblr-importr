@@ -3,8 +3,10 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
+	"log"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -52,18 +54,17 @@ func (ip *imageProcessor) add(originalURLstr, fullFilePath string) {
 	ip.seenURLs[originalURLstr] = true
 
 	ip.eg.Go(func() (err error) {
-		return save(originalURLstr, fullFilePath)
-		// 	for i := 0; i < 3; i++ {
-		// 		err = save(originalURLstr, fullFilePath)
-		// 		if err == nil {
-		// 			break
-		// 		}
-		// 		log.Printf("Fetch err: %v", err)
-		// 		// Hmm, something went wrong, try again after sleeping
-		// 		time.Sleep(500 * time.Millisecond)
-		// 	}
+		for i := 0; i < 3; i++ {
+			err = save(originalURLstr, fullFilePath)
+			if err == nil {
+				break
+			}
+			log.Printf("Fetch err: %v", err)
+			// Hmm, something went wrong, try again after sleeping
+			time.Sleep(500 * time.Millisecond)
+		}
 
-		// 	return err
+		return err
 	})
 }
 
