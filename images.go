@@ -3,10 +3,11 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
-	"log"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -59,12 +60,11 @@ func (ip *imageProcessor) add(originalURLstr, fullFilePath string) {
 			if err == nil {
 				break
 			}
-			log.Printf("Fetch err: %v", err)
 			// Hmm, something went wrong, try again after sleeping
 			time.Sleep(500 * time.Millisecond)
 		}
 
-		return err
+		return errors.Wrap(err, "Repeatedly failed to fetch")
 	})
 }
 
