@@ -4,24 +4,24 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
 )
 
+var bytesDownloaded = new(int64)
+
 // Client for all HTTP requests
 var cl = &http.Client{
-	// 5 second timeout is pretty generous
-	Timeout: 5 * time.Second,
+	// 15 second timeout is pretty generous
+	Timeout: 15 * time.Second,
 }
 
 func get(url string, w io.Writer) (err error) {
-	log.Printf("GET %s", url)
-
 	rsp, err := cl.Get(url)
 	if err != nil {
 		err = errors.Wrap(err, fmt.Sprintf("could not fetch %s", url))
@@ -34,11 +34,12 @@ func get(url string, w io.Writer) (err error) {
 		return
 	}
 
-	if _, err = io.Copy(w, rsp.Body); err != nil {
+	var n int64
+	if n, err = io.Copy(w, rsp.Body); err != nil {
 		err = errors.Wrap(err, fmt.Sprintf("connection reset for %s", url))
 		return
 	}
-
+	atomic.AddInt64(bytesDownloaded, n)
 	return
 }
 
@@ -77,8 +78,6 @@ func save(url, fullFilePath string) (err error) {
 
 	// Wait for throttling
 	<-throttle
-
-	log.Printf("Saving %s", fullFilePath)
 
 	// Open file
 	f, err := os.Create(fullFilePath)

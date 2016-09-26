@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync/atomic"
+	"time"
 
 	"github.com/kezhuw/toml"
 	"github.com/pkg/errors"
@@ -29,7 +31,7 @@ func main() {
 	pp := NewPostProcessor(i)
 	tc := NewTumblrClient(blog, key, pp)
 
-	die(tc.Wait())
+	die(Countdown(tc.Wait))
 
 	// TODO:
 	// Move into sub-directory
@@ -42,5 +44,39 @@ func die(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %v\n", err)
 		os.Exit(1)
+	}
+}
+
+func Countdown(f func() error) error {
+	ec := make(chan error)
+	go func() {
+		ec <- f()
+	}()
+
+	// Move cursor down one before starting
+	fmt.Println()
+	const (
+		cursorUp  = "\033[1A"
+		eraseLine = "\033[K"
+	)
+
+	ticker := time.NewTicker(100 * time.Millisecond)
+	start := time.Now()
+	var lastBdl, lastSpeed Size
+
+	for {
+		select {
+		case <-ticker.C:
+			bdl := Size(atomic.LoadInt64(bytesDownloaded))
+			// Average speed with last speed and total speed
+			totalSpeed := Size(bdl) / Size(time.Since(start)) * Size(time.Second)
+			speed := Size(bdl-lastBdl) * 10
+			speed = (lastSpeed + totalSpeed + speed) / 3
+			fmt.Printf("%s\rDownloaded %s @ %s/s%s\n",
+				cursorUp, bdl, speed, eraseLine)
+			lastBdl, lastSpeed = bdl, speed
+		case err := <-ec:
+			return err
+		}
 	}
 }
