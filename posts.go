@@ -132,13 +132,13 @@ func (pp *PostProcessor) processPost(post Post) (err error) {
 
 	defer f.Close()
 
-	if _, err = io.WriteString(f, "+++"); err != nil {
+	if _, err = io.WriteString(f, "+++\n"); err != nil {
 		return
 	}
 	if _, err = io.Copy(f, r); err != nil {
 		return
 	}
-	if _, err = io.WriteString(f, "+++"); err != nil {
+	if _, err = io.WriteString(f, "+++\n"); err != nil {
 		return
 	}
 
