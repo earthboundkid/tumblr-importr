@@ -5,5 +5,5 @@ To use, get a Tumblr API key. Save the key and your blog's name in a file called
 
 ##To Do
 - Documentation
-- Image downloader
+- Sample theme
 - General cleanup
