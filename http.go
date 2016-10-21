@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -22,6 +23,8 @@ var cl = &http.Client{
 }
 
 func get(url string, w io.Writer) (err error) {
+	log.Printf("Getting %s...\n", url)
+
 	rsp, err := cl.Get(url)
 	if err != nil {
 		err = errors.Wrap(err, fmt.Sprintf("could not fetch %s", url))
@@ -69,6 +72,8 @@ var (
 )
 
 func save(url, fullFilePath string) (err error) {
+	log.Printf("Queueing %s to %s", url, fullFilePath)
+
 	// First try to make the directory
 	dirname := filepath.Dir(fullFilePath)
 

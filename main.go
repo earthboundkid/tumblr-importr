@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"sync/atomic"
 	"time"
@@ -11,7 +12,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+const debug = true
+
 func main() {
+	if !debug {
+		log.SetOutput(ioutil.Discard)
+	}
+
+	log.Println("Reading toml...")
+
 	data, err := ioutil.ReadFile("./tumblr.toml")
 	die(errors.Wrap(err, "could not read tumblr.toml"))
 
@@ -24,6 +33,8 @@ func main() {
 		Key  *string
 	}{&blog, &key})
 	die(errors.Wrap(err, "could not parse config file"))
+
+	log.Println("Starting processors")
 
 	// Todo configure me
 	// TODO what if you don't want images?
