@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var bytesDownloaded = new(int64)
+var BytesDownloaded = new(int64)
 
 // Client for all HTTP requests
 var cl = &http.Client{
@@ -42,7 +42,7 @@ func get(url string, w io.Writer) (err error) {
 		err = errors.Wrap(err, fmt.Sprintf("connection reset for %s", url))
 		return
 	}
-	atomic.AddInt64(bytesDownloaded, n)
+	atomic.AddInt64(BytesDownloaded, n)
 	return
 }
 
@@ -52,7 +52,7 @@ var (
 	semaphore = make(chan bool, 10)
 )
 
-func fetch(url string) (io.Reader, error) {
+func Fetch(url string) (io.Reader, error) {
 	semaphore <- true
 	defer func() {
 		<-semaphore
@@ -71,7 +71,7 @@ var (
 	throttle = time.Tick(rate) // Leaks a routine (shrug)
 )
 
-func save(url, fullFilePath string) (err error) {
+func Save(url, fullFilePath string) (err error) {
 	log.Printf("Queueing %s to %s", url, fullFilePath)
 
 	// First try to make the directory

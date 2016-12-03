@@ -1,4 +1,4 @@
-package main
+package tumblr
 
 import (
 	"crypto/md5"
@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/carlmjohnson/tumblr-importr/http"
 	"github.com/pkg/errors"
 
 	"golang.org/x/sync/errgroup"
@@ -56,7 +57,7 @@ func (ip *imageProcessor) add(originalURLstr, fullFilePath string) {
 
 	ip.eg.Go(func() (err error) {
 		for i := 0; i < 3; i++ {
-			err = save(originalURLstr, fullFilePath)
+			err = http.Save(originalURLstr, fullFilePath)
 			if err == nil {
 				break
 			}

@@ -8,13 +8,15 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/carlmjohnson/tumblr-importr/http"
+	"github.com/carlmjohnson/tumblr-importr/tumblr"
 	"github.com/kezhuw/toml"
 	"github.com/pkg/errors"
 )
 
 const debug = true
 
-func main() {
+func run() error {
 	if !debug {
 		log.SetOutput(ioutil.Discard)
 	}
@@ -22,7 +24,9 @@ func main() {
 	log.Println("Reading toml...")
 
 	data, err := ioutil.ReadFile("./tumblr.toml")
-	die(errors.Wrap(err, "could not read tumblr.toml"))
+	if err != nil {
+		return errors.Wrap(err, "could not read tumblr.toml")
+	}
 
 	var (
 		blog, key string
@@ -32,33 +36,35 @@ func main() {
 		Blog *string
 		Key  *string
 	}{&blog, &key})
-	die(errors.Wrap(err, "could not parse config file"))
+	if err != nil {
+		return errors.Wrap(err, "could not parse config file")
+	}
 
 	log.Println("Starting processors")
 
 	// Todo configure me
 	// TODO what if you don't want images?
-	i := NewImageProcessor()
-	pp := NewPostProcessor(i)
-	tc := NewTumblrClient(blog, key, pp)
+	i := tumblr.NewImageProcessor()
+	pp := tumblr.NewPostProcessor(i)
+	tc := tumblr.NewTumblrClient(blog, key, pp)
 
-	die(Countdown(tc.Wait))
+	return Countdown(http.BytesDownloaded, tc.Wait)
 
 	// TODO:
-	// Move into sub-directory
+	// Configuration options
+	// Templates for output dir
+	// Taskpools
 	// Write documentation
-
-	// Benchmark networking code
 }
 
-func die(err error) {
-	if err != nil {
+func main() {
+	if err := run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func Countdown(f func() error) error {
+func Countdown(bytesDownloaded *int64, f func() error) error {
 	ec := make(chan error)
 	go func() {
 		ec <- f()

@@ -1,4 +1,4 @@
-package main
+package tumblr
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/carlmjohnson/tumblr-importr/http"
 	"github.com/pkg/errors"
 
 	"golang.org/x/sync/errgroup"
@@ -35,7 +36,7 @@ func (tc *TumblrClient) getTumblrPosts(offset int) (posts []Post, totalPosts int
 	q.Set("offset", strconv.Itoa(offset))
 	u.RawQuery = q.Encode()
 
-	r, err := fetch(u.String())
+	r, err := http.Fetch(u.String())
 	if err != nil {
 		return
 	}
