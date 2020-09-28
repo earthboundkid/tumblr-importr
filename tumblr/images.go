@@ -21,10 +21,10 @@ type imageProcessor struct {
 	eg        errgroup.Group
 }
 
-func NewImageProcessor() *imageProcessor {
+func NewImageProcessor(imageBaseURL string, localImagePath string) *imageProcessor {
 	return &imageProcessor{
-		baseURL:   "https://example.com/images/",
-		imagePath: "images/",
+		baseURL:   imageBaseURL,
+		imagePath: localImagePath,
 		seenURLs:  map[string]bool{},
 	}
 }
