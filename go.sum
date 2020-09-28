@@ -1,0 +1,6 @@
+github.com/kezhuw/toml v0.0.0-20190622234124-9d1a8af4e1bc h1:G4+re//MXjijiT3LQbYtD5Lu80qpKzWJVcavYoitSm8=
+github.com/kezhuw/toml v0.0.0-20190622234124-9d1a8af4e1bc/go.mod h1:EqjSvjSZINYob7AniFAoWwxuNCJjzga3k8ep9ouatm4=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 h1:qwRHBd0NqMbJxfbotnDhm2ByMI1Shq4Y6oRJo21SGJA=
+golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
