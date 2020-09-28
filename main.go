@@ -29,13 +29,15 @@ func run() error {
 	}
 
 	var (
-		blog, key string
+		blog, key, imageBaseURL, localImagePath string
 	)
 
 	err = toml.Unmarshal(data, &struct {
 		Blog *string
 		Key  *string
-	}{&blog, &key})
+		ImageBaseURL *string
+		LocalImagePath *string
+	}{&blog, &key, &imageBaseURL, &localImagePath})
 	if err != nil {
 		return errors.Wrap(err, "could not parse config file")
 	}
@@ -44,7 +46,7 @@ func run() error {
 
 	// Todo configure me
 	// TODO what if you don't want images?
-	i := tumblr.NewImageProcessor()
+	i := tumblr.NewImageProcessor(imageBaseURL, localImagePath)
 	pp := tumblr.NewPostProcessor(i)
 	tc := tumblr.NewTumblrClient(blog, key, pp)
 
