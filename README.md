@@ -65,4 +65,4 @@ This will save all your posts and images in a format compatible with Hugo. Move 
 
 ## To Do
 - [ ] Better sample theme
-
+- [ ] Better handling of cancellation
