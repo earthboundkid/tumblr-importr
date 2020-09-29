@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"time"
@@ -84,14 +85,15 @@ func (app *appEnv) processPost(post Post) (imgSubs map[string]string, err error)
 		originalURLstr := string(b)
 		hashedFileName := fmt.Sprintf("%x%s",
 			md5.Sum(b), filepath.Ext(originalURLstr))
-
-		fullFilePath := filepath.Join(app.localImagePath,
+		// path, not filepath because it's a URL
+		hashedFileName = path.Join(
 			hashedFileName[0:2], hashedFileName[2:4], hashedFileName[4:])
+		// filepath for portability?
+		fullFilePath := filepath.Join(app.localImagePath, hashedFileName)
 
 		imgSubs[originalURLstr] = fullFilePath
 
-		newURL := fmt.Sprintf("%s%s/%s/%s", app.imageBaseURL,
-			hashedFileName[0:2], hashedFileName[2:4], hashedFileName[4:])
+		newURL := path.Join(app.imageBaseURL, hashedFileName)
 
 		return []byte(newURL)
 	})
