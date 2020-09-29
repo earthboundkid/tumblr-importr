@@ -37,6 +37,9 @@ func save(cl *http.Client, url, fullFilePath string) (err error) {
 		err = fmt.Errorf("bad status for %s: %s", url, rsp.Status)
 		return
 	}
-	_, err = io.Copy(f, rsp.Body)
+
+	if _, err = io.Copy(f, rsp.Body); err != nil {
+		os.Remove(fullFilePath)
+	}
 	return
 }
