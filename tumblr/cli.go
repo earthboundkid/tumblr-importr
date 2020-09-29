@@ -299,6 +299,7 @@ func (app *appEnv) getImages(imgSubs []imgSub) error {
 			saved, total, len(errors),
 		)
 	}
+	app.log("\n\n")
 	close(subCh)
 	close(errCh)
 	return errors.Merge()
