@@ -67,7 +67,7 @@ This will save all your posts and images in a format compatible with Hugo. Move 
 
 ## Philosophy
 
-When converting a Tumblr blog to Hugo, you may initially think you want all your content converted to Markdown files. For example, you may think you want your link posts to become something like `### Link: <a href="$LINK">$TITLE</a>↵↵$CONTENT`. The trouble with this approach is that converting to Markdown loses formatting information from Tumblr and locks you into a single representation of the data which cannot be easily changed later.
+When converting a Tumblr blog to Hugo, you may initially think you want all your content converted to Markdown files. For example, you may think you want your link posts to become something like `### Link: [$TITLE]($LINK)↵↵$CONTENT`. The trouble with this approach is that converting to Markdown loses formatting information from Tumblr and locks you into a single representation of the data which cannot be easily changed later.
 
 How tumblr-importr works instead is it reads the common post metadata out of the Tumblr API (title, URL, slug, date, etc.) and writes that in the format Hugo expects, then it makes all of the other data from Tumblr on the post available as a custom parameter. Now you can format your link posts using Hugo's templating language to make it look exactly how you want:
 
