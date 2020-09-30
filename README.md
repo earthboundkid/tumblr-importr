@@ -22,10 +22,12 @@ tumblr-importr
 
 A tool for creating a Hugo blog from a Tumblr site.
 
-Downloading images can take a long time, so separate options exist for skipping
-downloading posts or images.
+Options can also be set as environmental variables named like
+TUMBLR_IMPORTR_API_KEY. An API key must be created by registering at
+<http://www.tumblr.com/oauth/apps>.
 
-Options can also be set as environmental vars named like TUMBLR_IMPORTR_API_KEY.
+Downloading images can take a long time, so separate options exist for skipping
+downloading posts or images. Image downloads will resume if restarted.
 
 Options:
 
@@ -34,7 +36,7 @@ Options:
   -blog blog name
         blog name to import
   -image-dest path
-        destination path to save images (default "images")
+        destination path to save images (default "static/images")
   -image-rewrites path
         path for JSON file containing image rewrites (default "image-rewrites.json")
   -image-url URL
@@ -42,7 +44,7 @@ Options:
   -max-conns-per-host int
         max number of simultaneous connections (default 9)
   -post-dest path
-        destination path to save posts (default "post")
+        destination path to save posts (default "content/post")
   -skip-api-request
         skip downloading posts from the API and just use -image-rewrites file to download images
   -skip-image-download
