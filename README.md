@@ -65,6 +65,20 @@ $ TUMBLR_IMPORTR_API_KEY='1234' TUMBLR_IMPORTR_BLOG='myblog' tumblr-importr
 
 This will save all your posts and images in a format compatible with Hugo. Move the images into Hugo's static folder and then customize the sample layout so that the posts look like you want.
 
+## Philosophy
+
+When converting a Tumblr blog to Hugo, you may initially think you want all your content converted to Markdown files. For example, you may think you want your link posts to become something like `### Link: <a href="$LINK">$TITLE</a>↵↵$CONTENT`. The trouble with this approach is that converting to Markdown loses formatting information from Tumblr and locks you into a single representation of the data which cannot be easily changed later.
+
+How tumblr-importr works instead is it reads the common post metadata out of the Tumblr API (title, URL, slug, date, etc.) and writes that in the format Hugo expects, then it makes all of the other data from Tumblr on the post available as a custom parameter. Now you can format your link posts using Hugo's templating language to make it look exactly how you want:
+
+```html
+  <h3>Link: <a href="{{ .Params.tumblr.url }}">{{ .Params.tumblr.title }}</a></h3>
+
+  {{ .Params.tumblr.description | safeHTML }}
+```
+
+If you decide the `H3` should be an `H2` or the content needs a wrapper `<div class="content">` or you want to change "Link:" to be an emoji 🔗, all you need to do is change your Hugo theme, rather than going back and reformatting all your Markdown files. All of the information that Tumblr had on the post is available, making it possible to fully replicate a Tumblr theme in Hugo without any information loss.
+
 ## To Do
 - [ ] Better sample theme
 - [ ] Better handling of cancellation
