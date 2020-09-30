@@ -78,10 +78,12 @@ Options:
 	if err := flagext.ParseEnv(fl, AppName); err != nil {
 		return err
 	}
-	if err := flagext.MustHave(fl, "api-key", "blog"); err != nil {
-		return err
+	if !app.skipAPIRequest {
+		if err := flagext.MustHave(fl, "api-key", "blog"); err != nil {
+			return err
+		}
+		app.client = NewClient(*blog, *key, http.DefaultClient)
 	}
-	app.client = NewClient(*blog, *key, http.DefaultClient)
 	return nil
 }
 
