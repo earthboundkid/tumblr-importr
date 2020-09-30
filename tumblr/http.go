@@ -1,6 +1,7 @@
 package tumblr
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -40,8 +41,8 @@ func save(cl *http.Client, url, fullFilePath string) (err error) {
 		err = fmt.Errorf("bad status for %s: %s", url, rsp.Status)
 		return
 	}
-
-	if _, err = io.Copy(f, rsp.Body); err != nil {
+	buf := bufio.NewReader(rsp.Body)
+	if _, err = io.Copy(f, buf); err != nil {
 		os.Remove(fullFilePath)
 	}
 	return
