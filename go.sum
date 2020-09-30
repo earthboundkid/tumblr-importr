@@ -4,5 +4,7 @@ github.com/carlmjohnson/exitcode v0.20.1 h1:ocEdVMAj2t80KJdTvtwxCLBTQWbLQmUZ8Ikl
 github.com/carlmjohnson/exitcode v0.20.1/go.mod h1:MZ6ThCDx517DQcrpYnnns1pLh8onjFl+B/AsrOrdmpc=
 github.com/carlmjohnson/flagext v0.20.2 h1:qvpMM+TytSrlh3+EIVn/pzOwwq9y13hXZab6Y4Gvqpo=
 github.com/carlmjohnson/flagext v0.20.2/go.mod h1:Eenv0epIUAr4NuedNmkzI8WmBmjIxZC239XcKxYS2ac=
+github.com/henvic/ctxsignal v1.0.0 h1:EvBKhGucE28G25BSRzJgXtfNQDVk0i5Ag8L/jmfT/hA=
+github.com/henvic/ctxsignal v1.0.0/go.mod h1:UT/zf10ZRehwLPo6UhRgzkGEoOEKSfjqhhf1lrV54To=
 github.com/kezhuw/toml v0.0.0-20190622234124-9d1a8af4e1bc h1:G4+re//MXjijiT3LQbYtD5Lu80qpKzWJVcavYoitSm8=
 github.com/kezhuw/toml v0.0.0-20190622234124-9d1a8af4e1bc/go.mod h1:EqjSvjSZINYob7AniFAoWwxuNCJjzga3k8ep9ouatm4=

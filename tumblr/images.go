@@ -1,11 +1,13 @@
 package tumblr
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/carlmjohnson/errutil"
+	"github.com/henvic/ctxsignal"
 )
 
 func (app *appEnv) loadImageSubs() error {
@@ -35,6 +37,9 @@ func makeImgSubs(m map[string]string) []imgSub {
 
 func (app *appEnv) getImages(imgSubs []imgSub) error {
 	app.log("Saving %d images...\n\n", len(imgSubs))
+	ctx, cancel := ctxsignal.WithTermination(context.Background())
+	defer cancel()
+
 	var (
 		errors           errutil.Slice
 		total            = len(imgSubs)
@@ -44,8 +49,9 @@ func (app *appEnv) getImages(imgSubs []imgSub) error {
 		errCh            = make(chan error)
 	)
 	for i := 0; i < app.workers; i++ {
-		go app.getImage(subCh, errCh)
+		go app.getImage(ctx, subCh, errCh)
 	}
+loop:
 	for len(imgSubs) > 0 || inflightRequests > 0 {
 		var loopSub imgSub
 		loopCh := subCh
@@ -66,6 +72,19 @@ func (app *appEnv) getImages(imgSubs []imgSub) error {
 			}
 			errors.Push(err)
 			inflightRequests--
+
+		case <-ctx.Done():
+			// drain workers
+			for i := 0; i < inflightRequests; i++ {
+				err := <-errCh
+				if err == errSkip {
+					err = nil
+					skippedN++
+				}
+				errors.Push(err)
+			}
+
+			break loop
 		}
 		saved := total - len(imgSubs) - inflightRequests
 		app.log("\rImages saved: %d/%d Skipped: %d Errors: %d      ",
@@ -78,9 +97,9 @@ func (app *appEnv) getImages(imgSubs []imgSub) error {
 	return errors.Merge()
 }
 
-func (app *appEnv) getImage(subCh chan imgSub, errCh chan error) {
+func (app *appEnv) getImage(ctx context.Context, subCh chan imgSub, errCh chan error) {
 	for sub := range subCh {
-		err := save(http.DefaultClient, sub.url, sub.destPath)
+		err := save(ctx, http.DefaultClient, sub.url, sub.destPath)
 		errCh <- err
 	}
 }

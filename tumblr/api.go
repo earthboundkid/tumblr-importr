@@ -7,12 +7,14 @@ import (
 	"os"
 
 	"github.com/carlmjohnson/errutil"
+	"github.com/henvic/ctxsignal"
 )
 
 func (app *appEnv) apiRequest() error {
 	app.log("Making initial request\n")
 
-	ctx := context.Background()
+	ctx, cancel := ctxsignal.WithTermination(context.Background())
+	defer cancel()
 	resp, err := app.client.GetOffset(ctx, 0)
 	if err != nil {
 		return err
@@ -89,8 +91,15 @@ loop:
 			}
 			postsProcessing--
 			postsProcessed++
-		// todo
+
 		case <-ctx.Done():
+			// drain workers
+			for i := 0; i < requestsInflight; i++ {
+				resp := <-tumblrRespCh
+				errors.Push(resp.error)
+				postsQueue = append(postsQueue, resp.Posts...)
+			}
+
 			break loop
 		}
 

@@ -81,4 +81,4 @@ If you decide the `H3` should be an `H2` or the content needs a wrapper `<div cl
 
 ## To Do
 - [ ] Better sample theme
-- [ ] Better handling of cancellation
+- [X] Better handling of cancellation

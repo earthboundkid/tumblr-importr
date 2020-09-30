@@ -2,6 +2,7 @@ package tumblr
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -14,7 +15,7 @@ import (
 
 var errSkip = errors.New("skip")
 
-func save(cl *http.Client, url, fullFilePath string) (err error) {
+func save(ctx context.Context, cl *http.Client, url, fullFilePath string) (err error) {
 	// Skip if it exists
 	if info, err := os.Stat(fullFilePath); err == nil && info.Size() != 0 {
 		return errSkip
@@ -31,7 +32,11 @@ func save(cl *http.Client, url, fullFilePath string) (err error) {
 	}
 	defer errutil.Defer(&err, f.Close)
 
-	rsp, err := cl.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	rsp, err := cl.Do(req)
 	if err != nil {
 		return
 	}
