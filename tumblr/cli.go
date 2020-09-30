@@ -22,7 +22,7 @@ func CLI(args []string) error {
 		return err
 	}
 	if err = app.Exec(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Execution error: %+v\n", err)
 	}
 	return err
 }
@@ -273,6 +273,7 @@ func (app *appEnv) getImages(imgSubs []imgSub) error {
 		errors           errutil.Slice
 		total            = len(imgSubs)
 		inflightRequests = 0
+		skippedN         = 0
 		subCh            = make(chan imgSub)
 		errCh            = make(chan error)
 	)
@@ -293,12 +294,16 @@ func (app *appEnv) getImages(imgSubs []imgSub) error {
 			imgSubs = imgSubs[1:]
 		// todo retries???
 		case err := <-errCh:
+			if err == errSkip {
+				err = nil
+				skippedN++
+			}
 			errors.Push(err)
 			inflightRequests--
 		}
 		saved := total - len(imgSubs) - inflightRequests
-		app.log("\rImages saved: %d/%d Errors: %d      ",
-			saved, total, len(errors),
+		app.log("\rImages saved: %d/%d Skipped: %d Errors: %d      ",
+			saved, total, skippedN, len(errors),
 		)
 	}
 	app.log("\n\n")
