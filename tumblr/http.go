@@ -1,6 +1,7 @@
 package tumblr
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,15 +11,17 @@ import (
 	"github.com/carlmjohnson/errutil"
 )
 
+var errSkip = errors.New("skip")
+
 func save(cl *http.Client, url, fullFilePath string) (err error) {
+	// Skip if it exists
+	if info, err := os.Stat(fullFilePath); err == nil && info.Size() != 0 {
+		return errSkip
+	}
 	// First try to make the directory
 	dirname := filepath.Dir(fullFilePath)
 	if err = os.MkdirAll(dirname, os.ModePerm); err != nil {
 		return
-	}
-	// Skip if it exists
-	if info, err := os.Stat(fullFilePath); err == nil && info.Size() != 0 {
-		return nil
 	}
 	// Open file
 	f, err := os.Create(fullFilePath)
