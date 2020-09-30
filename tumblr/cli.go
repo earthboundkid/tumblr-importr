@@ -47,10 +47,12 @@ func (app *appEnv) ParseArgs(args []string) error {
 
 A tool for creating a Hugo blog from a Tumblr site.
 
-Downloading images can take a long time, so separate options exist for skipping
-downloading posts or images.
+Options can also be set as environmental variables named like
+TUMBLR_IMPORTR_API_KEY. An API key must be created by registering at
+<http://www.tumblr.com/oauth/apps>.
 
-Options can also be set as environmental vars named like TUMBLR_IMPORTR_API_KEY.
+Downloading images can take a long time, so separate options exist for skipping
+downloading posts or images. Image downloads will resume if restarted.
 
 Options:
 
@@ -61,8 +63,8 @@ Options:
 
 	blog := fl.String("blog", "", "`blog name` to import")
 	key := fl.String("api-key", "", "Tumblr consumer API `key`")
-	fl.StringVar(&app.localPostPath, "post-dest", "post", "destination `path` to save posts")
-	fl.StringVar(&app.localImagePath, "image-dest", "images", "destination `path` to save images")
+	fl.StringVar(&app.localPostPath, "post-dest", "content/post", "destination `path` to save posts")
+	fl.StringVar(&app.localImagePath, "image-dest", "static/images", "destination `path` to save images")
 	fl.StringVar(&app.imageBaseURL, "image-url", "/images", "new base `URL` for images")
 	fl.StringVar(&app.imageRewritePath, "image-rewrites", "image-rewrites.json", "`path` for JSON file containing image rewrites")
 	fl.DurationVar(&http.DefaultClient.Timeout, "timeout", 10*time.Second, "HTTP client timeout")
