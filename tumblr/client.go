@@ -3,41 +3,37 @@ package tumblr
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 
-	"github.com/carlmjohnson/tumblr-importr/httpjson"
+	"github.com/carlmjohnson/requests"
 )
 
 type Client struct {
-	baseURL *url.URL
-	cl      *http.Client
+	rb *requests.Builder
 }
 
 const (
-	apiURL   = `https://api.tumblr.com/v2/blog/%s/posts?api_key=%s&apiLimit=%d`
 	apiLimit = 20
 )
 
 func NewClient(blog, key string, cl *http.Client) *Client {
-	// Figure out starting URL
-	baseURL, _ := url.Parse(fmt.Sprintf(apiURL, blog, key, apiLimit))
-	if cl == nil {
-		cl = http.DefaultClient
+	return &Client{
+		requests.
+			URL("https://api.tumblr.com").
+			Client(cl).
+			Pathf("/v2/blog/%s/posts", blog).
+			Param("api_key", key).
+			Param("apiLimit", strconv.Itoa(apiLimit)),
 	}
-	return &Client{baseURL, cl}
 }
 
 func (tc *Client) GetOffset(ctx context.Context, offset int) (resp APIResponse, err error) {
-	u := *tc.baseURL
-	q := u.Query()
-	q.Set("offset", strconv.Itoa(offset))
-	u.RawQuery = q.Encode()
-
 	var data APIEnvelope
-	err = httpjson.Get(ctx, tc.cl, u.String(), &data)
+	err = tc.rb.Clone().
+		Param("offset", strconv.Itoa(offset)).
+		ToJSON(&data).
+		Fetch(ctx)
 
 	return data.Response, err
 }
