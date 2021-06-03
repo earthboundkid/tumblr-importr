@@ -1,16 +1,14 @@
 package tumblr
 
 import (
-	"bufio"
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/carlmjohnson/errutil"
+	"github.com/carlmjohnson/requests"
 )
 
 var errSkip = errors.New("skip")
@@ -30,25 +28,15 @@ func save(ctx context.Context, cl *http.Client, url, fullFilePath string) (err e
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err != nil {
+			os.Remove(fullFilePath)
+		}
+	}()
 	defer errutil.Defer(&err, f.Close)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return err
-	}
-	rsp, err := cl.Do(req)
-	if err != nil {
-		return
-	}
-	defer rsp.Body.Close()
-
-	if rsp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("bad status for %s: %s", url, rsp.Status)
-		return
-	}
-	buf := bufio.NewReader(rsp.Body)
-	if _, err = io.Copy(f, buf); err != nil {
-		os.Remove(fullFilePath)
-	}
-	return
+	return requests.
+		URL(url).
+		ToWriter(f).
+		Fetch(ctx)
 }
