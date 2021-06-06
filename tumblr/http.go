@@ -37,6 +37,7 @@ func save(ctx context.Context, cl *http.Client, url, fullFilePath string) (err e
 
 	return requests.
 		URL(url).
+		Client(cl).
 		ToWriter(f).
 		Fetch(ctx)
 }
