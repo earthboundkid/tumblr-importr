@@ -8,7 +8,7 @@ First install [Go](http://golang.org).
 If you just want to install the binary to your current directory and don't care about the source code, run
 
 ```bash
-GOBIN="$(pwd)" GOPATH="$(mktemp -d)" go get github.com/carlmjohnson/tumblr-importr
+GOBIN="$(pwd)" GOPATH="$(mktemp -d)" go install github.com/carlmjohnson/tumblr-importr@latest
 ```
 
 This will create an executable called `tumblr-importr` in your current directory. Put it wherever you put executables.
